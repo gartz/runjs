@@ -678,12 +678,19 @@ exports.reflector = function(on){
     process.stdin.resume();
 }
 
-exports.start = function(tag, flags, script, args, cb) {
+exports.start = function(tag, flags, script, args, cb, debug) {
+    if (!isNaN(debug)) {
+        debug = parseInt(debug);
+    }
+    
     createTagPaths(tag, flags, script, function(err){
         if(err)
             return cb(err);
 
         var a = [node_bin_self, module.filename, "monitor", tag, JSON.stringify(flags), script];
+        if (debug > 0) {
+            a.splice(1, 0, '--debug=' + debug);
+        }
         a = a.concat(args);
         var p = cp.spawn(runjswatch_bin, a), d = "";
 
@@ -994,6 +1001,7 @@ function help() {
     out("       #by -m:host:port # send probing information via UDP to host:port\n")
     out("       #by -t:tag # provide process tag explicitly, normally its the filename of your .js file\n")
     out("       #by -nf:nodeflags # provide custom node command line arguments\n")
+    out(n + " #bg debug #by port #by tag #w stop particular process nicely\n")
     out(n + " #bg stop #by tag #w stop particular process nicely\n")
     out(n + " #bg kill #by tag #w kills a particular process with kill -9\n")
     out(n + " #bg switch #by tag #w start process again and trigger old one to shutdown with a signal\n")
@@ -1098,6 +1106,11 @@ if (args[0].match(/^cluster$/i)) {
 var startcmd = ""
 if (args[0].match(/^(start|run)$/i)) startcmd = args.shift();
 
+if (args[0].match(/^(debug)$/i)) {
+    startcmd = args.shift();
+    debugPort = args.shift();
+}
+
 // parse out monitor flags
 var flags = { };
 while(args.length){
@@ -1124,4 +1137,4 @@ exports.start(tag, flags, args.shift(), args, function(err, d) {
         out("#br ERROR: # " + err + "\n")
 
     process.exit(0);
-});
+}, debugPort);
