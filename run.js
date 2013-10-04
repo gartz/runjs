@@ -1103,7 +1103,8 @@ if (args[0].match(/^tail$/i)) {
 if (args[0].match(/^cluster$/i)) {
 }
 
-var startcmd = ""
+var startcmd = "";
+var debugPort;
 if (args[0].match(/^(start|run)$/i)) startcmd = args.shift();
 
 if (args[0].match(/^(debug)$/i)) {
